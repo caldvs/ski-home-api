@@ -416,7 +416,7 @@ class RouteMode(str, Enum):
 
 @app.get("/")
 def root():
-    return RedirectResponse(url="/docs")
+    return RedirectResponse(url="/redoc")
 
 
 @app.get("/villages")
