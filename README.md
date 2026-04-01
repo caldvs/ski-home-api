@@ -11,11 +11,13 @@ pip install -r requirements.txt
 uvicorn app:app --reload
 ```
 
-Interactive docs at [localhost:8000/docs](http://localhost:8000/docs).
+Interactive API docs at [localhost:8000/docs](http://localhost:8000/docs).
 
 ## Endpoints
 
-### `GET /route`
+### Routing
+
+#### `GET /route`
 
 Compute a route from GPS coordinates to a home village.
 
@@ -25,8 +27,9 @@ Compute a route from GPS coordinates to a home village.
 | `lat` | float | yes | Latitude of current position |
 | `village` | string | yes | Destination village name |
 | `difficulty` | string | no | `prefer-easy`, `reds-if-needed`, or `any-piste` (default) |
-
-**Example:**
+| `mode` | string | no | `direct` (fastest, default) or `most-skiing` (maximise vertical) |
+| `via` | string | no | Waypoint name — route through a specific run or lift |
+| `geometry` | bool | no | Include coordinate geometry for each leg (default false) |
 
 ```
 GET /route?lon=6.98&lat=45.45&village=Tignes+Le+Lac&difficulty=prefer-easy
@@ -50,7 +53,8 @@ GET /route?lon=6.98&lat=45.45&village=Tignes+Le+Lac&difficulty=prefer-easy
   "summary": {
     "runs": 3,
     "lifts": 1,
-    "estimated_minutes": 14
+    "estimated_minutes": 14,
+    "vertical_m": 463.0
   },
   "legs": [
     {
@@ -59,6 +63,7 @@ GET /route?lon=6.98&lat=45.45&village=Tignes+Le+Lac&difficulty=prefer-easy
       "from": {"name": "Solaise top", "elev": 2551.0},
       "to": {"name": "Col de Fresse", "elev": 2363.8},
       "length_m": 1200.5,
+      "estimated_seconds": 150.1,
       "difficulty": "easy",
       "colour": "blue"
     }
@@ -66,25 +71,95 @@ GET /route?lon=6.98&lat=45.45&village=Tignes+Le+Lac&difficulty=prefer-easy
 }
 ```
 
-### `GET /villages`
+#### `GET /route/alternatives`
+
+Return 2-3 alternative routes (fastest, most skiing, easiest terrain).
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `lon` | float | yes | Longitude |
+| `lat` | float | yes | Latitude |
+| `village` | string | yes | Destination village |
+| `difficulty` | string | no | Difficulty preference |
+| `geometry` | bool | no | Include geometry |
+
+```
+GET /route/alternatives?lon=6.98&lat=45.45&village=Tignes+Le+Lac
+```
+
+### Location
+
+#### `GET /nearby`
+
+Find runs, lifts, and villages near GPS coordinates.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `lon` | float | yes | Longitude |
+| `lat` | float | yes | Latitude |
+| `radius_m` | float | no | Search radius in metres (default 500) |
+
+```
+GET /nearby?lon=6.98&lat=45.45&radius_m=300
+```
+
+#### `GET /status`
+
+Describe where you are: nearest node, adjacent runs and lifts, reachable villages with estimated times.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `lon` | float | yes | Longitude |
+| `lat` | float | yes | Latitude |
+
+```
+GET /status?lon=6.98&lat=45.45
+```
+
+### Discovery
+
+#### `GET /runs`
+
+List all runs in the resort with difficulty, length, and elevation drop.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `search` | string | no | Filter by name (case-insensitive) |
+| `difficulty` | string | no | Filter by difficulty (`novice`, `easy`, `intermediate`, `advanced`, `expert`) |
+
+```
+GET /runs?difficulty=intermediate
+```
+
+#### `GET /lifts`
+
+List all lifts with type and elevation gain.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `search` | string | no | Filter by name (case-insensitive) |
+| `lift_type` | string | no | Filter by type (`chair_lift`, `gondola`, `funicular`, `cable_car`, `drag_lift`, etc.) |
+
+```
+GET /lifts?lift_type=gondola
+```
+
+#### `GET /graph`
+
+Return the raw routing graph (nodes, edges, villages) for custom clients.
+
+```
+GET /graph
+```
+
+### Reference
+
+#### `GET /villages`
 
 List available destination villages with coordinates.
 
 ```
 GET /villages
-```
-
-```json
-{
-  "Tignes Val Claret": {"lat": 45.451, "lon": 6.9, "elev": 2100},
-  "Tignes Le Lac": {"lat": 45.468, "lon": 6.907, "elev": 2100},
-  "Tignes Les Boisses": {"lat": 45.4975, "lon": 6.923, "elev": 1800},
-  "Tignes Les Brevieres": {"lat": 45.508, "lon": 6.921, "elev": 1550},
-  "Val d'Isere La Daille": {"lat": 45.4608, "lon": 6.9638, "elev": 1800},
-  "Val d'Isere Centre": {"lat": 45.449, "lon": 6.981, "elev": 1850},
-  "Val d'Isere Le Laisinant": {"lat": 45.4471, "lon": 6.9943, "elev": 1860},
-  "Val d'Isere Le Fornet": {"lat": 45.45, "lon": 7.011, "elev": 1930}
-}
 ```
 
 ## Data sources
