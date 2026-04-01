@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 from fastapi import FastAPI, Query
-from fastapi.responses import RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 
 GRAPH_PATH = Path(__file__).parent / "graph.json"
 
@@ -414,9 +414,26 @@ class RouteMode(str, Enum):
     most_skiing = "most-skiing"
 
 
-@app.get("/")
+STOPLIGHT_HTML = """
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ski Home API</title>
+    <link rel="stylesheet" href="https://unpkg.com/@stoplight/elements/styles.min.css">
+</head>
+<body>
+    <elements-api apiDescriptionUrl="/openapi.json" router="hash" layout="sidebar" />
+    <script src="https://unpkg.com/@stoplight/elements/web-components.min.js"></script>
+</body>
+</html>
+"""
+
+
+@app.get("/", response_class=HTMLResponse)
 def root():
-    return RedirectResponse(url="/redoc")
+    return STOPLIGHT_HTML
 
 
 @app.get("/villages")
