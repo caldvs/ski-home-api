@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 GRAPH_PATH = Path(__file__).parent / "graph.json"
@@ -400,6 +401,13 @@ app = FastAPI(
     title="Ski Home API",
     description="Route skiers home in the Tignes / Val d'Isere linked resort.",
     version="1.0.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["GET"],
+    allow_headers=["*"],
 )
 
 
