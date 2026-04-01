@@ -430,9 +430,9 @@ def villages():
 
 @app.get("/route")
 def route(
-    lon: float = Query(description="Longitude of current position"),
-    lat: float = Query(description="Latitude of current position"),
-    village: str = Query(description="Destination village name"),
+    lon: float = Query(default=6.9258, description="Longitude of current position"),
+    lat: float = Query(default=45.4421, description="Latitude of current position"),
+    village: str = Query(default="Tignes Le Lac", description="Destination village name"),
     difficulty: Difficulty = Query(
         default=Difficulty.any_piste,
         description="Difficulty preference",
@@ -475,9 +475,9 @@ def route(
 
 @app.get("/route/alternatives")
 def route_alternatives(
-    lon: float = Query(description="Longitude of current position"),
-    lat: float = Query(description="Latitude of current position"),
-    village: str = Query(description="Destination village name"),
+    lon: float = Query(default=6.9258, description="Longitude of current position"),
+    lat: float = Query(default=45.4421, description="Latitude of current position"),
+    village: str = Query(default="Tignes Le Lac", description="Destination village name"),
     difficulty: Difficulty = Query(
         default=Difficulty.any_piste,
         description="Difficulty preference",
@@ -505,8 +505,8 @@ def route_alternatives(
 
 @app.get("/nearby")
 def nearby(
-    lon: float = Query(description="Longitude of current position"),
-    lat: float = Query(description="Latitude of current position"),
+    lon: float = Query(default=6.9258, description="Longitude of current position"),
+    lat: float = Query(default=45.4421, description="Latitude of current position"),
     radius_m: float = Query(default=500, description="Search radius in metres"),
 ):
     """Find nearby runs, lifts, and villages from GPS coordinates."""
@@ -564,8 +564,8 @@ def nearby(
 
 @app.get("/status")
 def status(
-    lon: float = Query(description="Longitude of current position"),
-    lat: float = Query(description="Latitude of current position"),
+    lon: float = Query(default=6.9258, description="Longitude of current position"),
+    lat: float = Query(default=45.4421, description="Latitude of current position"),
 ):
     """Describe where you are on the mountain: nearest node, area, reachable villages."""
     node, dist_m = graph.find_nearest_node(lon, lat)
