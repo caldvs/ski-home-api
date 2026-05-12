@@ -276,7 +276,7 @@ def _make_cost_fn(mode: DifficultyMode, objective: RouteObjective, config: Route
             c -= lift_down_discount
         if most_skiing_bonus and edge.type in ("run", "connection"):
             c -= edge.elev_drop * most_skiing_bonus
-        return c
+        return max(c, 1.0)
 
     return cost
 

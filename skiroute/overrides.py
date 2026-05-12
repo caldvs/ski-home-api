@@ -136,3 +136,4 @@ def apply_overrides(graph: "Graph", overrides_path: str | Path, verbose: bool = 
     if verbose:
         print(f"  Applied overrides: +{added_nodes} nodes, +{added_edges} edges, "
               f"-{blocked} blocked, ~{adjusted} adjusted")
+    graph._invalidate_cache()

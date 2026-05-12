@@ -52,17 +52,20 @@ def build_graph(
     config = config or BuildConfig()
 
     builder = _GraphBuilder(gpkg_path, resort, config, verbose)
-    builder.extract_lifts()
-    builder.extract_runs()
-    builder.build_skating_edges()
-    if destinations:
-        builder.tag_destinations(destinations)
-    if overrides_path:
-        apply_overrides(builder.graph, overrides_path, verbose=verbose)
-    if verbose:
-        print(f"Graph complete: {len(builder.graph.nodes)} nodes, "
-              f"{len(builder.graph.edges)} edges")
-    return builder.graph
+    try:
+        builder.extract_lifts()
+        builder.extract_runs()
+        builder.build_skating_edges()
+        if destinations:
+            builder.tag_destinations(destinations)
+        if overrides_path:
+            apply_overrides(builder.graph, overrides_path, verbose=verbose)
+        if verbose:
+            print(f"Graph complete: {len(builder.graph.nodes)} nodes, "
+                  f"{len(builder.graph.edges)} edges")
+        return builder.graph
+    finally:
+        builder.conn.close()
 
 
 # ---------------------------------------------------------------------------

@@ -28,7 +28,6 @@ Example:
 
 from __future__ import annotations
 
-import copy
 from dataclasses import dataclass
 from typing import Optional
 
@@ -46,10 +45,13 @@ class Connector:
 
     `kind="traverse"`: a long off-piste ski/skin traverse. One-directional
     if the destination is lower; bidirectional if same elevation.
+
+    `kind="piste"`: a one-way downhill ski itinerary (e.g. an off-piste
+    connector between adjacent resorts). Always directed higher → lower.
     """
     from_node_name: str
     to_node_name: str
-    kind: str = "cable_car"          # "cable_car" | "traverse"
+    kind: str = "cable_car"          # "cable_car" | "traverse" | "piste"
     name: str = "Connector"
     # If endpoint-by-name lookup is ambiguous, use these to disambiguate:
     from_resort_index: Optional[int] = None
@@ -94,9 +96,9 @@ def auto_piste_connectors(
         highs_a, lows_a = by_role(g_a)
         highs_b, lows_b = by_role(g_b)
 
-        # A→B: high in A → low in B (sort by descending elev drop, take top N).
-        # B→A: high in B → low in A.
-        candidates: list[tuple[float, str, int, int]] = []
+        # A→B: high in A → low in B; B→A: high in B → low in A.
+        # Sort later by distance (shortest first), take top N.
+        candidates: list[tuple[float, str, str, int, int]] = []
         for src_list, dst_list, src_idx, dst_idx in (
             (highs_a, lows_b, ri_a, ri_b),
             (highs_b, lows_a, ri_b, ri_a),

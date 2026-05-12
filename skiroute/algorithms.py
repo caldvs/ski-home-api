@@ -269,6 +269,7 @@ def bidirectional_dijkstra(
             if u in bwd_settled:
                 continue
             bwd_settled[u] = d
+            stats.nodes_visited += 1
             if record_visited:
                 stats.backward_visited_set.add(u)
             if u in fwd_dist:

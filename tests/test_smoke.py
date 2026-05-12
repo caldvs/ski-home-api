@@ -1,6 +1,6 @@
 """Smoke tests for skiroute.
 
-These tests load the bundled Tignes graph.json from examples/data/
+These tests load the bundled Tignes graph (examples/data/tignes.json)
 and verify basic routing works end-to-end. They do NOT require the
 OpenSkiData GeoPackage and are safe to run anywhere.
 """

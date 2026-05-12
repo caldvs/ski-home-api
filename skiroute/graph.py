@@ -90,7 +90,12 @@ class Graph:
         return f"Graph(nodes={len(self.nodes)}, edges={len(self.edges)}, destinations={len(self.destinations)})"
 
     def find_nearest_node(self, lon: float, lat: float) -> tuple[Node, float]:
-        """Return (node, distance_m) for the closest graph node."""
+        """Return (node, distance_m) for the closest graph node.
+
+        Raises ValueError if the graph contains no nodes.
+        """
+        if not self.nodes:
+            raise ValueError("Graph has no nodes")
         best, best_dist = None, float("inf")
         for node in self.nodes.values():
             d = haversine(lon, lat, node.lon, node.lat)
