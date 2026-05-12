@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "skiroute"
+version = "0.1.0"
+description = "On-piste routing for ski resorts. Build a routable graph from OpenSkiData and find the fastest way down."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Callum" }]
+keywords = ["ski", "skiing", "routing", "openskidata", "dijkstra", "graph", "navigation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "ruff>=0.5"]
+
+[project.urls]
+Homepage = "https://github.com/callum/skiroute"
+
+[tool.setuptools.packages.find]
+include = ["skiroute*"]
+exclude = ["tests*", "examples*"]
