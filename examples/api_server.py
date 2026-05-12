@@ -1,9 +1,15 @@
 """
-Ski Home API — Route skiers home in Tignes / Val d'Isere.
+Reference FastAPI server — Tignes / Val d'Isère routing over HTTP.
 
-Loads a precomputed routing graph and exposes Dijkstra shortest-path
-routing over HTTP. Send your GPS coordinates and destination village,
-get back a structured route of runs, lifts, and skating connections.
+This is the legacy self-contained code preserved from the original
+ski-home-api project (which now hosts this skiroute library). It still
+runs, but internally re-implements Dijkstra rather than using
+`skiroute.route()` — keep it as a reference for what an HTTP wrapper
+around skiroute can look like.
+
+To run:
+    pip install -r examples/requirements-api.txt
+    uvicorn examples.api_server:app --reload
 """
 
 import json
@@ -17,7 +23,7 @@ from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-GRAPH_PATH = Path(__file__).parent / "graph.json"
+GRAPH_PATH = Path(__file__).parent / "data" / "tignes.json"
 
 DIFFICULTY_COLOUR = {
     "novice": "green",
