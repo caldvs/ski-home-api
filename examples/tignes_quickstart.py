@@ -33,11 +33,15 @@ TIGNES_DESTINATIONS = [
 ]
 
 
+OVERRIDES = Path(__file__).parent / "data" / "tignes_overrides.json"
+
+
 def main() -> None:
     graph = skiroute.build_graph(
         gpkg_path=GPKG,
         resort=skiroute.ResortFilter(localities=["Tignes", "Val d'Isère"]),
         destinations=TIGNES_DESTINATIONS,
+        overrides_path=OVERRIDES,
     )
 
     # Save for the iOS app / API (compatible with existing format)

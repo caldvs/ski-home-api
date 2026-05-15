@@ -19,7 +19,6 @@ Three things make this not just a generic shortest-path:
 
 from __future__ import annotations
 
-import heapq
 from dataclasses import dataclass, field
 from typing import Iterable, Sequence
 
@@ -201,10 +200,15 @@ def route_home(
         if path is None:
             return None
 
-    # Extend through the destination so the route ends at the village base
-    final_dest = _which_destination(graph, path[-1].to_id, target_names)
+    # Extend through the destination so the route ends at the village base.
+    # If Dijkstra returned an empty path the start node was already tagged
+    # with a target destination, so anchor on the start node instead.
+    anchor_node_id = path[-1].to_id if path else start_node.id
+    final_dest = _which_destination(graph, anchor_node_id, target_names)
     if final_dest:
-        path = _extend_through_destination(graph, path, final_dest)
+        path = _extend_through_destination(
+            graph, path, final_dest, anchor_node_id=anchor_node_id,
+        )
 
     return _build_route(graph, path, start_node, snap_dist)
 
@@ -222,38 +226,19 @@ def _dijkstra(
     objective: RouteObjective,
     config: RouteConfig,
 ) -> tuple[list[Edge] | None, str | None]:
-    """Dijkstra with the ski cost model. Lazy dist init for large graphs."""
+    """Dijkstra with the ski cost model.
+
+    Delegates to the generic ``algorithms.dijkstra`` with a cost function
+    that bakes in the mode + objective. Keeping the algorithm itself in
+    one place means future tuning (skip-stale guards, indexed heap,
+    bidirectional search) only needs to land in ``algorithms.py``.
+    """
+    from skiroute import algorithms  # local import: avoid circular import at module load
     cost_fn = _make_cost_fn(mode, objective, config)
-
-    # Lazy dist: only initialised for nodes actually touched.
-    dist: dict[int, float] = {from_id: 0.0}
-    prev: dict[int, int] = {}
-    prev_edge: dict[int, Edge] = {}
-    visited: set[int] = set()
-    heap: list[tuple[float, int]] = [(0.0, from_id)]
-
-    while heap:
-        d, u = heapq.heappop(heap)
-        if u in visited:
-            continue
-        visited.add(u)
-
-        if u in target_nodes:
-            return _reconstruct(prev, prev_edge, u), None
-
-        for edge_idx in graph.adjacency.get(u, ()):
-            edge = graph.edges[edge_idx]
-            v = edge.to_id
-            if v in visited:
-                continue
-            nd = d + cost_fn(edge)
-            if nd < dist.get(v, float("inf")):
-                dist[v] = nd
-                prev[v] = u
-                prev_edge[v] = edge
-                heapq.heappush(heap, (nd, v))
-
-    return None, "No route found"
+    path, _stats = algorithms.dijkstra(graph, from_id, target_nodes, cost_fn)
+    if path is None:
+        return None, "No route found"
+    return path, None
 
 
 def _make_cost_fn(mode: DifficultyMode, objective: RouteObjective, config: RouteConfig):
@@ -279,16 +264,6 @@ def _make_cost_fn(mode: DifficultyMode, objective: RouteObjective, config: Route
         return max(c, 1.0)
 
     return cost
-
-
-def _reconstruct(prev: dict[int, int], prev_edge: dict[int, Edge], u: int) -> list[Edge]:
-    path: list[Edge] = []
-    cur = u
-    while cur in prev_edge:
-        path.append(prev_edge[cur])
-        cur = prev[cur]
-    path.reverse()
-    return path
 
 
 # ---------------------------------------------------------------------------
@@ -351,17 +326,37 @@ def _which_destination(graph: Graph, node_id: int, names: Iterable[str]) -> str 
     return None
 
 
-def _extend_through_destination(graph: Graph, path: list[Edge], destination: str) -> list[Edge]:
+def _extend_through_destination(
+    graph: Graph,
+    path: list[Edge],
+    destination: str,
+    anchor_node_id: int | None = None,
+) -> list[Edge]:
     """After reaching the first node tagged with this destination, keep
     descending via runs/connections within the destination so the route
-    finishes at the village base, not on the slopes above it."""
-    if not path:
+    finishes at the village base, not on the slopes above it.
+
+    ``anchor_node_id`` lets callers extend from an explicit node when
+    ``path`` is empty (the start node was already in the destination).
+    """
+    if path:
+        cursor = path[-1].to_id
+    elif anchor_node_id is not None:
+        cursor = anchor_node_id
+    else:
         return path
-    cursor = path[-1].to_id
+    # Visited-set guard: the steepest-descent pick uses strict elevation
+    # decrease, which is enough to terminate against simple loops — but a
+    # destination tagged on two ~equal-elev nodes with a 0-drop connection
+    # between them could still oscillate via different feature names.
+    # An explicit visited set guarantees termination regardless of geometry.
+    visited: set[int] = {cursor}
     while True:
         best_edge, best_drop = None, 0.0
         for e in graph.adjacent_edges(cursor):
             if e.type not in ("run", "connection"):
+                continue
+            if e.to_id in visited:
                 continue
             dest_node = graph.nodes[e.to_id]
             if destination not in dest_node.destinations:
@@ -373,6 +368,7 @@ def _extend_through_destination(graph: Graph, path: list[Edge], destination: str
             break
         path.append(best_edge)
         cursor = best_edge.to_id
+        visited.add(cursor)
     return path
 
 

@@ -4,4 +4,13 @@ __pycache__/
 *.pyc
 .claude/
 .DS_Store
+
+# Build / install artefacts
 skiroute.egg-info
+*.egg-info/
+
+# Generated coverage report (re-create with `python tests/coverage_report.py`)
+tests/coverage_report.html
+
+# Local copy of the OpenSkiData GeoPackage source-of-truth (~500 MB)
+/openskidata.gpkg

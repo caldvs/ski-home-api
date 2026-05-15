@@ -129,6 +129,34 @@ class Graph:
             self._reverse_adjacency = rev
         return self._reverse_adjacency
 
+    def edges_by_type(self, *types: str) -> list[Edge]:
+        """All edges matching any of the given type tags (e.g. ``"run"``,
+        ``"lift"``, ``"connection"``, ``"skate"``, ``"lift_down"``).
+
+        Consolidates the hand-rolled filter loops scattered across the
+        FastAPI example, the front-end, and the test scenarios. No cache
+        — the graph is small and the cost of filtering is negligible
+        compared to the cost of keeping a cache fresh through overrides.
+        """
+        wanted = set(types)
+        return [e for e in self.edges if e.type in wanted]
+
+    def named_features(self) -> dict[tuple[str, str], list[int]]:
+        """Group named-feature edges by ``(type, name)``.
+
+        Skating and lift-down edges are excluded — they're wiring, not
+        user-visible features. Returns ``{(type, name): [edge_index, ...]}``.
+        """
+        groups: dict[tuple[str, str], list[int]] = defaultdict(list)
+        for idx, e in enumerate(self.edges):
+            if not e.name:
+                continue
+            if e.type in ("run", "connection"):
+                groups[("run", e.name)].append(idx)
+            elif e.type == "lift":
+                groups[("lift", e.name)].append(idx)
+        return dict(groups)
+
     def _invalidate_cache(self) -> None:
         self._reverse_adjacency = None
 

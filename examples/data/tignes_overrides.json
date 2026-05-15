@@ -1,0 +1,106 @@
+{
+  "_comment": "Manual graph patches for the Tignes / Val d'Isère build. Applied by skiroute.build_graph after the automatic build. Keep entries here when OpenSkiData omits a real-world connection or geometry truncates a piste.",
+
+  "add_edges": [
+    {
+      "_comment": "Digues is Tignes Le Lac's 'home run' — purely for skiing back to accommodation at end of day. The piste empties into the village road network next to Aquatignes, but OpenSkiData truncates the geometry ~260m short of the nearest graph node. Without this edge the run is a dead-end pocket and the router refuses to plot home routes that end on Digues.",
+      "from_name": "Digues bottom",
+      "to_name": "Lavachet bottom",
+      "type": "skate",
+      "cost_override": 180
+    },
+    {
+      "_comment": "Diebold piste continues from Verte bottom (249) → 3J top (264) — a 54m blue run section that OSM labelled 'Diebold' but mis-typed as skate. Reinstating as a proper run keeps the Diebold descent reading as one continuous piste from Funival top down to Daille bottom.",
+      "from_id": 249,
+      "to_id": 264,
+      "type": "run",
+      "name": "Diebold",
+      "difficulty": "easy",
+      "cost_override": 25
+    },
+    {
+      "_comment": "53m mid-piste segment of Coupe du Monde (node 298 → Orange top 357) that OSM tagged as 'Run 125831' skate. Reinstating as a Coupe du Monde run keeps the descent continuous from Coupe du Monde top all the way to Daille bottom.",
+      "from_id": 298,
+      "to_id": 357,
+      "type": "run",
+      "name": "Coupe du Monde",
+      "difficulty": "intermediate",
+      "cost_override": 25
+    },
+    {
+      "_comment": "Pim Pam carpet lift in the Val d'Isère Solaise beginner bowl. Bottom = Madeleine bottom (node 225, 2516m), top = Solaise top (node 109, 2550m); 261m horizontal, +34m vertical. Closes the bunny-hill loop: ski down 'Run 68931' or 'Lac/Parc à Moutons' from Solaise top, ride Pim Pam back up. Missing from OpenSkiData; added manually. ~240s for the slow carpet ride.",
+      "from_id": 225,
+      "to_id": 109,
+      "type": "lift",
+      "name": "Pim Pam",
+      "lift_type": "magic_carpet",
+      "cost_override": 240
+    },
+    {
+      "_comment": "Madeleine access piste, Madeleine Express bottom (97) → Madeleine bottom (225). 87m essentially flat green connector used to ski between the Madeleine Express chairlift and the bottom of the Pim Pam carpet. Replaces the existing skate.",
+      "from_id": 97,
+      "to_id": 225,
+      "type": "run",
+      "name": "Madeleine",
+      "difficulty": "novice",
+      "cost_override": 20
+    },
+    {
+      "_comment": "Reverse direction of the Madeleine access piste (225 → 97). Same gentle green; runs are stored as one-way edges, so a bidirectional connector needs both.",
+      "from_id": 225,
+      "to_id": 97,
+      "type": "run",
+      "name": "Madeleine",
+      "difficulty": "novice",
+      "cost_override": 20
+    }
+  ],
+
+  "remove_named_features": [
+    {
+      "name": "Golf",
+      "_comment": "OSM geometry for Golf truncates ~640m short of any other graph node and sits in open ground on the SW shore of Lac de Tignes. May actually be a winter walking / dog-sled track rather than a piste. Drop entirely."
+    },
+    {
+      "name": "Couloir de petite balme",
+      "_comment": "Extreme unmaintained route across the Balme snow field. Not a marked piste — should never have been in the routing graph."
+    },
+    {
+      "name": "Couloir de la Table d'orientation",
+      "_comment": "Same family as petite balme — narrow off-piste couloir below the Bellevarde Table d'Orientation viewpoint. Its top node (alongside the high 'Face de Bellevarde top' race-start at 2804m) forms a 2-node SCC isolated from the lift area 110m below. Removing the couloir leaves the race-start as a known singleton orphan."
+    }
+  ],
+
+  "remove_edges": [
+    {
+      "_comment": "The 54m link between two 'Verte bottom' nodes (Verte run terminus → 3J top) is named 'Diebold' but typed as skate, breaking the continuous Diebold piste chain that runs all the way down to Daille bottom. Drop the skate so we can add a proper run segment in its place.",
+      "from_id": 249,
+      "to_id": 264,
+      "type": "skate"
+    },
+    {
+      "_comment": "53m skate named 'Run 125831' between two Coupe du Monde run segments (node 298 → Orange top 357). Same pattern as Diebold: a real piste section mis-tagged as skate, breaks the continuous Coupe du Monde piste chain.",
+      "from_id": 298,
+      "to_id": 357,
+      "type": "skate"
+    },
+    {
+      "_comment": "Flat connector between Madeleine Express bottom (97) and Madeleine bottom (225). Currently a 17m skate named 'Madeleine'. Replacing with a proper run so it renders as a piste — the real-world piste runs across this 87m gap. Direction 1 of 2.",
+      "from_id": 97,
+      "to_id": 225,
+      "type": "skate"
+    },
+    {
+      "_comment": "Synthetic reverse-skate between Madeleine bottom (225) and Madeleine Express bottom (97). Replacing with a piste-typed reverse so the connection is symmetrical and renders as a piste in both directions. Direction 2 of 2.",
+      "from_id": 225,
+      "to_id": 97,
+      "type": "skate"
+    }
+  ],
+
+  "block_edges": [],
+  "cost_adjustments": [],
+  "rename_features": [],
+  "set_difficulty": [],
+  "add_nodes": []
+}

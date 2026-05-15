@@ -5,14 +5,15 @@ and verify basic routing works end-to-end. They do NOT require the
 OpenSkiData GeoPackage and are safe to run anywhere.
 """
 
+import sys
 from pathlib import Path
 
 import pytest
 
 import skiroute
 
-
-GRAPH_PATH = Path(__file__).parent.parent / "examples" / "data" / "tignes.json"
+sys.path.insert(0, str(Path(__file__).parent))
+from coverage_scenarios import GRAPH_PATH  # noqa: E402  — single source of truth
 
 
 @pytest.fixture(scope="module")

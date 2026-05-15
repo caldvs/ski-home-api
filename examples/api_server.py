@@ -1,11 +1,26 @@
 """
 Reference FastAPI server — Tignes / Val d'Isère routing over HTTP.
 
-This is the legacy self-contained code preserved from the original
+⚠ DUPLICATED LOGIC — DRIFT RISK ⚠
+This file is the legacy self-contained code preserved from the original
 ski-home-api project (which now hosts this skiroute library). It still
-runs, but internally re-implements Dijkstra rather than using
-`skiroute.route()` — keep it as a reference for what an HTTP wrapper
-around skiroute can look like.
+runs, but it has its own copy of:
+
+  - ``SkiGraph`` (node + edge loader, find_nearest_node, dijkstra,
+    extend_through_village)
+  - ``DIFFICULTY_PENALTY`` table
+  - ``LIFT_DOWN_PENALTY`` and the hard-coded 0.7 prefer-easy discount
+  - ``MOST_SKIING_RUN_BONUS_PER_M``
+  - ``consolidate_legs`` and ``_build_route_response``
+
+The penalty tables MUST stay in sync with ``skiroute.config.RouteConfig``
+or the deployed HTTP API will return different routes than calls into
+the library. ``tests/test_api_server_drift.py`` asserts equality and
+fails loudly the moment they diverge.
+
+When this file is rewritten to use ``skiroute.route()`` /
+``skiroute.route_home()`` directly the drift-detector becomes
+unnecessary and can be deleted.
 
 To run:
     pip install -r examples/requirements-api.txt
